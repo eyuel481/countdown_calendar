@@ -77,16 +77,16 @@
             months.forEach((mName, idx) => {
                 let dCount = isGreg ? gregDaysCount[idx] : (idx === 12 ? 6 : 30);
                 let offset = isGreg ? gregOffs[idx] : ethOffs[idx];
-                let html = <div class="month-card"><div class="month-title">${mName}</div>
+                let html = `<div class="month-card"><div class="month-title">${mName}</div>
                     <div class="days-header"><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>ዓር</span><span>ቅዳ</span><span>እሁ</span></div>
-                    <div class="grid">;
+                    <div class="grid">`;
                 
                 let hList = [];
-                for (let e = 0; e < offset; e++) html += <div class="cell" style="background:#fafafa"></div>;
+                for (let e = 0; e < offset; e++) html += `<div class="cell" style="background:#fafafa"></div>`;
 
                 for (let d = 1; d <= dCount; d++) {
-                    let hName = isGreg ? holidays.GREG[${idx}-${d}] : holidays.ETH[${idx}-${d}];
-                    if(hName) hList.push(${d} - ${hName});
+                    let hName = isGreg ? holidays.GREG[`${idx}-${d}`] : holidays.ETH[`${idx}-${d}`];
+                    if(hName) hList.push(`${d} - ${hName}`);
 
                     let hint = "";
                     if (currentMode === 'COMB') {
@@ -94,18 +94,19 @@
                         let gD = gS.d + (d - 1);
                         let limit = gregDaysCount[gS.m];
                         if (gD > limit) gD -= limit;
-                        hint = <span class="greg-hint">${gD}</span>;
+                        hint = `<span class="greg-hint">${gD}</span>`;
                     }
 
                     // Today is Yekatit 22 (idx 5) / March 1 (idx 2)
                     let isToday = (currentMode === 'ETH' && idx === 5 && d === 22) || (currentMode === 'GREG' && idx === 2 && d === 1);
                     let marker = isToday ? "today-mark" : (hName ? "holiday-mark" : "");
-                    html += <div class="cell">${hint}<div class="${marker}">${d}</div></div>;
+                    html += `<div class="cell">${hint}<div class="${marker}">${d}</div></div>`;
                 }
-                container.innerHTML += html + </div><div class="holiday-footer">${hList.map(h => <div class="holiday-item">${h}</div>).join('') || '---'}</div></div>;
+                container.innerHTML += html + `</div><div class="holiday-footer">${hList.map(h => `<div class="holiday-item">${h}</div>`).join('') || '---'}</div></div>`;
             });
             container.innerHTML += '<div class="scroll-spacer"></div>';
         }
+
         function switchMode(m) {
             currentMode = m;
             const header = document.getElementById('mainHeader');
