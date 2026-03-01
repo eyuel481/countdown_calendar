@@ -1,0 +1,15 @@
+{
+  "name": "Ethio-Flow Pro Calendar",
+  "short_name": "EthioFlow",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0088cc",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
