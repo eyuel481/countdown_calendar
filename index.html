@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethio-Flow 2018 Pro</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1976D2">
+    
+    <style>
+        :root { --eth-blue: #1976D2; --greg-green: #2E7D32; --comb-gold: #FFA000; --adwa-red: #B71C1C; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; display: flex; height: 100vh; flex-direction: column; overflow: hidden; }
+        
+        .adwa-banner { background: var(--adwa-red); color: white; text-align: center; padding: 10px; font-weight: bold; font-size: 0.9em; letter-spacing: 1px; }
+        .header { background: var(--eth-blue); color: white; padding: 14px; font-weight: bold; text-align: center; transition: 0.3s; }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .info-box { background: #fff; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid #eee; cursor: pointer; transition: 0.2s; }
+        .info-box.active-mode { border-color: var(--eth-blue); background: #e3f2fd; }
+        .box-label { font-size: 0.65em; color: #666; font-weight: 800; display: block; }
+        .box-value { font-size: 0.9em; color: #222; font-weight: bold; }
+        
+        .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: center; padding-inline: 15vw; }
+        .calendar-wrapper::-webkit-scrollbar { display: none; }
+        
+        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 500px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
+        .month-title { padding: 15px; font-weight: 900; text-align: center; font-size: 1.2em; border-bottom: 1px solid #f0f0f0; }
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 10px 0; font-size: 0.75em; font-weight: bold; }
+        
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; flex: 1; }
+        .cell { background: white; display: flex; align-items: center; justify-content: center; position: relative; font-weight: 700; font-size: 1em; font-family: 'monospace'; }
+        .greg-hint { position: absolute; top: 4px; right: 6px; font-size: 0.6em; color: var(--eth-blue); opacity: 0.8; }
+        
+        .holiday-footer { padding: 12px; background: #fffdfd; border-top: 1px dashed #eee; font-size: 0.75em; text-align: center; border-radius: 0 0 24px 24px; }
+        .holiday-item { color: var(--adwa-red); font-weight: bold; }
+        
+        .today-mark { background: var(--eth-blue); color: white !important; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+        .holiday-mark { border: 2px solid var(--adwa-red); color: var(--adwa-red); border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+        .scroll-spacer { min-width: 15vw; flex-shrink: 0; }
+    </style>
+</head>
+<body>
+    <div id="adwaBanner" class="adwa-banner">የዓድዋ ድል በዓል: ነገ ነው! 🇪🇹</div>
+    <div class="header" id="mainHeader">የኢትዮጵያ ቀን መቁጠሪያ 2018</div>
+    
+    <div class="dashboard">
+        <div id="box-eth" class="info-box active-mode" onclick="switchMode('ETH')"><span class="box-label">ETHIOPIAN</span><span class="box-value">2018 E.C.</span></div>
+        <div id="box-greg" class="info-box" onclick="switchMode('GREG')"><span class="box-label">GREGORIAN</span><span class="box-value">2026 G.C.</span></div>
+        <div id="box-comb" class="info-box" onclick="switchMode('COMB')"><span class="box-label">COMBINED</span><span class="box-value">18 / 26</span></div>
+    </div>
+
+    <div class="calendar-wrapper" id="calendarBody"></div>
+
+    <script>
+        const ethMonths = ["መስከረም", "ጥቅምት", "ህዳር", "ታህሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜ"];
+        const gregMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+        const ethOffs = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 0];
+        const gregOffs = [3, 6, 6, 2, 4, 0, 2, 5, 1, 3, 6, 1];
+        const gregDaysCount = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const gregStartMap = [{d:11,m:8},{d:11,m:9},{d:10,m:10},{d:10,m:11},{d:9,m:0},{d:8,m:1},{d:10,m:2},{d:9,m:3},{d:9,m:4},{d:8,m:5},{d:8,m:6},{d:7,m:7},{d:6,m:8}];
+
+        const holidays = {
+            ETH: {"0-1":"እንቁጣጣሽ","0-17":"መስቀል","3-29":"ገና","4-11":"ጥምቀት","5-23":"የዓድዋ ድል","6-11":"ረመዳን","7-2":"ስቅለት","7-4":"ትንሣኤ","7-11":"ዒድ አል ፈጥር","7-23":"የላብ አደሮች","7-27":"አርበኞች","9-20":"ግንቦት 20","12-13":"ቡሄ","12-19":"መውሊድ"},
+            GREG: {"8-11":"New Year","8-27":"Meskel","0-7":"Genna","0-19":"Timket","2-2":"Adwa Victory","2-20":"Ramadan","3-10":"Good Friday","3-12":"Easter","3-19":"Eid al-Fitr","4-1":"Labour Day","4-5":"Patriots' Day","4-28":"Ginbot 20","7-19":"Buhe","7-25":"Mawlid"}
+        };
+
+        let currentMode = 'ETH';
+
+        function renderCalendar() {
+            const container = document.getElementById('calendarBody');
+            container.innerHTML = '<div class="scroll-spacer"></div>';
+            const isGreg = currentMode === 'GREG';
+            const months = isGreg ? gregMonths : ethMonths;
+
+            months.forEach((mName, idx) => {
+                let dCount = isGreg ? gregDaysCount[idx] : (idx === 12 ? 6 : 30);
+                let offset = isGreg ? gregOffs[idx] : ethOffs[idx];
+                let html = <div class="month-card"><div class="month-title">${mName}</div>
+                    <div class="days-header"><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>ዓር</span><span>ቅዳ</span><span>እሁ</span></div>
+                    <div class="grid">;
+                
+                let hList = [];
+                for (let e = 0; e < offset; e++) html += <div class="cell" style="background:#fafafa"></div>;
+
+                for (let d = 1; d <= dCount; d++) {
+                    let hName = isGreg ? holidays.GREG[${idx}-${d}] : holidays.ETH[${idx}-${d}];
+                    if(hName) hList.push(${d} - ${hName});
+
+                    let hint = "";
+                    if (currentMode === 'COMB') {
+                        let gS = gregStartMap[idx];
+                        let gD = gS.d + (d - 1);
+                        let limit = gregDaysCount[gS.m];
+                        if (gD > limit) gD -= limit;
+                        hint = <span class="greg-hint">${gD}</span>;
+                    }
+
+                    // Today is Yekatit 22 (idx 5) / March 1 (idx 2)
+                    let isToday = (currentMode === 'ETH' && idx === 5 && d === 22) || (currentMode === 'GREG' && idx === 2 && d === 1);
+                    let marker = isToday ? "today-mark" : (hName ? "holiday-mark" : "");
+                    html += <div class="cell">${hint}<div class="${marker}">${d}</div></div>;
+                }
+                container.innerHTML += html + </div><div class="holiday-footer">${hList.map(h => <div class="holiday-item">${h}</div>).join('') || '---'}</div></div>;
+            });
+            container.innerHTML += '<div class="scroll-spacer"></div>';
+        }
+        function switchMode(m) {
+            currentMode = m;
+            const header = document.getElementById('mainHeader');
+            document.querySelectorAll('.info-box').forEach(b => b.classList.remove('active-mode'));
+            document.getElementById('box-' + m.toLowerCase()).classList.add('active-mode');
+
+            if(m === 'ETH') { header.style.background = 'var(--eth-blue)'; header.innerText = "የኢትዮጵያ ቀን መቁጠሪያ 2018"; }
+            else if(m === 'GREG') { header.style.background = 'var(--greg-green)'; header.innerText = "Gregorian Calendar 2026"; }
+            else { header.style.background = 'var(--comb-gold)'; header.innerText = "Ethiopian & Gregorian 2018/26"; }
+
+            renderCalendar();
+            let sIdx = (m === 'GREG') ? 2 : 5;
+            setTimeout(() => document.querySelectorAll('.month-card')[sIdx].scrollIntoView({inline:'center'}), 50);
+        }
+
+        // Initialize
+        renderCalendar();
+        setTimeout(() => document.querySelectorAll('.month-card')[5].scrollIntoView({inline:'center'}), 200);
+    </script>
+</body>
+</html>
