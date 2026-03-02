@@ -115,6 +115,43 @@
         }, 1000);
 
         window.onload = generateCalendar;
+        // 1. Register the Service Worker & Ask Permission
+if ('serviceWorker' in navigator && 'Notification' in window) {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+        console.log("Service Worker Registered");
+        Notification.requestPermission();
+    });
+}
+
+// 2. Function to trigger a notification when a countdown hits 0
+function checkNotifications() {
+    const now = Date.now();
+    countdowns.forEach(item => {
+        // If the event time is reached (within a 2-second window)
+        if (Math.abs(item.targetTimestamp - now) < 2000 && !item.notified) {
+            sendPush(item.note);
+            item.notified = true; // Prevent double-notifying
+        }
+    });
+}
+
+function sendPush(eventTitle) {
+    if (Notification.permission === 'granted') {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification("Ethio-Flow Reminder!", {
+                body: `የእርስዎ ዝግጅት "${eventTitle}" አሁን ደርሷል!`,
+                vibrate: [200, 100, 200]
+            });
+        });
+    }
+}
+
+// Add checkNotifications() inside your existing setInterval
+setInterval(() => {
+    // ... your existing timer code ...
+    checkNotifications();
+}, 1000);
     </script>
 </body>
 </html>
+
