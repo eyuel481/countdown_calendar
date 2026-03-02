@@ -126,6 +126,12 @@
         renderCalendar();
         setTimeout(() => document.querySelectorAll('.month-card')[5].scrollIntoView({inline:'center'}), 200);
     </script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
 </body>
 </html>
+
 
