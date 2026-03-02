@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethio-Flow Pro 2018</title>
+    <title>Ethio-Flow Forever</title>
     <style>
         :root { --eth-blue: #1976D2; --adwa-red: #B71C1C; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; display: flex; height: 100vh; flex-direction: column; overflow: hidden; }
@@ -56,10 +56,14 @@
 
     <script>
         const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
-        // Correct weekday offsets for 2018 E.C. (0=Mon, 1=Tue... 6=Sun)
+        // Correct weekday offsets for 2018 E.C. (Thursday = 3)
         const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 6]; 
+        
+        // *** PERMANENT KEY NAME ***
+        const DB_KEY = 'ethioFlow_User_Data';
+        
+        let countdowns = JSON.parse(localStorage.getItem(DB_KEY)) || [];
         let targetDay, targetMonthIdx, targetMonthName;
-        let countdowns = JSON.parse(localStorage.getItem('ethioFlow_Precise')) || [];
 
         function generateCalendar() {
             const wrapper = document.getElementById('main-calendar');
@@ -69,7 +73,6 @@
                 const startOffset = offsets2018[mIdx];
                 let cellsHtml = "";
 
-                // Fill empty cells for correct alignment
                 for (let e = 0; e < startOffset; e++) {
                     cellsHtml += `<div class="cell empty"></div>`;
                 }
@@ -109,7 +112,9 @@
 
             const targetTimestamp = new Date().setHours(24, 0, 0, 0) + ((diffInDays - 1) * 86400000);
             countdowns.push({ id: Date.now(), note, targetTimestamp, monthName: targetMonthName, day: targetDay });
-            localStorage.setItem('ethioFlow_Precise', JSON.stringify(countdowns));
+            
+            // Save using the permanent DB_KEY
+            localStorage.setItem(DB_KEY, JSON.stringify(countdowns));
             document.getElementById('userNote').value = "";
             closeModal();
             renderList();
@@ -125,7 +130,7 @@
 
         function deleteItem(id) {
             countdowns = countdowns.filter(c => c.id !== id);
-            localStorage.setItem('ethioFlow_Precise', JSON.stringify(countdowns));
+            localStorage.setItem(DB_KEY, JSON.stringify(countdowns));
             renderList();
         }
 
