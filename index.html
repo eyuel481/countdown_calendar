@@ -4,209 +4,75 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
-    
     <title>Ethio-Flow Pro</title>
-    
     <style>
-        :root { 
-            --eth-blue: #1976D2; 
-            --adwa-red: #B71C1C; 
-            --bg: #f4f7f9;
-        }
-        
-        /* Ensures the app uses the full screen height */
-        html, body { 
-            height: 100%; 
-            margin: 0; 
-            padding: 0; 
-            overflow: hidden; 
-            background: var(--bg);
-            font-family: 'Segoe UI', sans-serif;
-        }
-
-        body { display: flex; flex-direction: column; }
-
-        .header { background: var(--eth-blue); color: white; padding: 20px 16px 12px; font-weight: 800; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        
-        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: white; border-bottom: 1px solid #ddd; }
-        .info-box { background: #f8f9fa; border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #eee; }
-        .box-label { font-size: 0.6em; color: #666; font-weight: 800; display: block; margin-bottom: 2px; }
-        .box-value { font-size: 0.85em; color: #222; font-weight: 700; }
-
-        /* CALENDAR ALIGNMENT FIX */
-        .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: flex-start; padding-inline: 12vw; scroll-behavior: smooth; }
-        .calendar-wrapper::-webkit-scrollbar { display: none; }
-        
-        .month-card { 
-            min-width: 310px; 
-            background: white; 
-            border-radius: 24px; 
-            scroll-snap-align: center; 
-            flex-shrink: 0; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06); 
-            border: 1px solid #eee;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .month-title { padding: 15px; font-weight: 800; text-align: center; font-size: 1.2em; color: var(--eth-blue); border-bottom: 1px solid #f0f0f0; }
-        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; color: #94a3b8; text-align: center; padding: 10px 0; font-size: 0.7em; font-weight: 800; }
-        
+        /* [Your existing CSS styles go here - Keep them the same] */
+        :root { --eth-blue: #1976D2; --adwa-red: #B71C1C; --bg: #f4f7f9; }
+        body { font-family: 'Segoe UI', sans-serif; margin: 0; background: var(--bg); display: flex; height: 100vh; flex-direction: column; overflow: hidden; }
+        .header { background: var(--eth-blue); color: white; padding: 20px 16px; font-weight: 800; text-align: center; }
+        .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; align-items: flex-start; padding-inline: 12vw; }
+        .month-card { min-width: 310px; background: white; border-radius: 24px; scroll-snap-align: center; margin-right: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
-        .cell { background: white; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .empty { background: #fafafa; }
-        .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-
-        /* COUNTDOWN AREA */
-        #countdownContainer { max-height: 280px; overflow-y: auto; background: #121212; padding: 15px; border-top: 4px solid var(--eth-blue); padding-bottom: 30px; }
-        .countdown-item { background: #1e1e1e; color: white; margin-bottom: 10px; padding: 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
-        .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-size: 1.1em; font-weight: bold; }
-
-        .backup-bar { display: flex; gap: 10px; margin-top: 15px; padding-top: 10px; border-top: 1px solid #333; }
-        .btn-small { flex: 1; background: #333; color: #ccc; border: none; padding: 10px; border-radius: 8px; font-size: 0.75em; font-weight: bold; cursor: pointer; }
-
-        /* MODAL */
-        #countdownModal { display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 25px; border-radius: 25px 25px 0 0; z-index: 2000; box-sizing: border-box; }
-        #overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1500; backdrop-filter: blur(2px); }
-        .input-box { width:100%; padding:15px; border:2px solid #eee; border-radius:12px; margin-bottom:15px; box-sizing:border-box; font-size: 1rem; }
-        .save-btn { background: var(--eth-blue); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; cursor: pointer; }
+        .cell { background: white; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        #countdownContainer { max-height: 250px; overflow-y: auto; background: #121212; padding: 15px; border-top: 4px solid var(--eth-blue); }
+        .countdown-item { background: #1e1e1e; color: white; margin-bottom: 10px; padding: 14px; border-radius: 14px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
+    <iframe id="storageBridge" src="storage.html" style="display:none;"></iframe>
+
     <div class="header">የኢትዮጵያ ዘመን አቆጣጠር 2018</div>
-
-    <div class="dashboard">
-        <div class="info-box"><span class="box-label">ዛሬ</span><span class="box-value">የካቲት 23</span></div>
-        <div class="info-box"><span class="box-label">ወር</span><span class="box-value">የካቲት</span></div>
-        <div class="info-box"><span class="box-label">ዓመት</span><span class="box-value">2018</span></div>
-    </div>
-
     <div class="calendar-wrapper" id="main-calendar"></div>
-
-    <div id="countdownContainer">
-        <div id="listBody"></div>
-        <div class="backup-bar">
-            <button class="btn-small" onclick="exportData()">💾 Backup</button>
-            <button class="btn-small" onclick="document.getElementById('importFile').click()">📂 Restore</button>
-            <input type="file" id="importFile" style="display:none" onchange="importData(event)">
-        </div>
-    </div>
-
-    <div id="overlay" onclick="closeModal()"></div>
-    <div id="countdownModal">
-        <h3 id="modalHead" style="margin-top:0;">አዲስ ዝግጅት ⏳</h3>
-        <input type="text" id="userNote" class="input-box" placeholder="የዝግጅቱ ስም...">
-        <button onclick="addCountdown()" class="save-btn">መቁጠር ጀምር</button>
-    </div>
+    <div id="countdownContainer"><div id="listBody"></div></div>
 
     <script>
-        // Request Storage Persistence immediately
-        if (navigator.storage && navigator.storage.persist) {
-            navigator.storage.persist();
+        const bridge = document.getElementById('storageBridge');
+        let countdowns = [];
+
+        // 1. TALK TO THE SAFE
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'LOAD_DATA') {
+                countdowns = event.data.payload;
+                renderList();
+            }
+        });
+
+        // Load data when the safe is ready
+        bridge.onload = () => {
+            bridge.contentWindow.postMessage({ type: 'GET' }, '*');
+        };
+
+        function saveData() {
+            bridge.contentWindow.postMessage({ type: 'SAVE', payload: countdowns }, '*');
+            renderList();
         }
 
+        // [Rest of your Calendar Logic - copy from previous working version]
         const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
         const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 4]; 
-        const DB_KEY = 'ETHIO_FLOW_PERMANENT_V1'; 
-
-        let countdowns = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-        let targetDay, targetMonthIdx, targetMonthName;
 
         function generateCalendar() {
             const wrapper = document.getElementById('main-calendar');
-            wrapper.innerHTML = "";
             amhMonths.forEach((name, mIdx) => {
-                const daysInMonth = (mIdx === 12) ? 6 : 30; 
-                const startOffset = offsets2018[mIdx];
                 let cellsHtml = "";
+                const startOffset = offsets2018[mIdx];
                 for (let e = 0; e < startOffset; e++) cellsHtml += `<div class="cell empty"></div>`;
-                for (let i = 1; i <= daysInMonth; i++) {
-                    const isToday = (name === "የካቲት" && i === 23);
-                    const cellContent = isToday ? `<div class="today-mark">${i}</div>` : i;
-                    cellsHtml += `<div class="cell" onclick="openModal('${name}', ${i}, ${mIdx})">${cellContent}</div>`;
+                for (let i = 1; i <= (mIdx === 12 ? 6 : 30); i++) {
+                    cellsHtml += `<div class="cell">${i}</div>`;
                 }
-                wrapper.innerHTML += `<div class="month-card" id="month-${mIdx}"><div class="month-title">${name} 2018</div><div class="days-header"><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>አር</span><span>ቅዳ</span><span>እሁ</span></div><div class="grid">${cellsHtml}</div></div>`;
+                wrapper.innerHTML += `<div class="month-card"><div style="padding:15px; text-align:center; font-weight:bold;">${name}</div><div class="grid">${cellsHtml}</div></div>`;
             });
-            setTimeout(() => { document.getElementById('month-5').scrollIntoView({inline:'center'}); }, 300);
-            renderList();
-        }
-
-        function openModal(month, day, mIdx) {
-            targetDay = day; targetMonthIdx = mIdx; targetMonthName = month;
-            document.getElementById('modalHead').innerText = `${month} ${day}`;
-            document.getElementById('overlay').style.display = 'block';
-            document.getElementById('countdownModal').style.display = 'block';
-        }
-
-        function closeModal() {
-            document.getElementById('overlay').style.display = 'none';
-            document.getElementById('countdownModal').style.display = 'none';
-        }
-
-        function addCountdown() {
-            const note = document.getElementById('userNote').value || "ዝግጅት";
-            const diff = ((targetMonthIdx * 30) + targetDay) - ((5 * 30) + 23);
-            if(diff < 0) { alert("እባክዎ ወደፊት ያለ ቀን ይምረጡ!"); return; }
-            const targetTimestamp = new Date().setHours(24, 0, 0, 0) + ((diff - 1) * 86400000);
-            countdowns.push({ id: Date.now(), note, targetTimestamp, monthName: targetMonthName, day: targetDay });
-            saveAndRefresh();
-            closeModal();
-        }
-
-        function saveAndRefresh() {
-            localStorage.setItem(DB_KEY, JSON.stringify(countdowns));
-            renderList();
         }
 
         function renderList() {
             const list = document.getElementById('listBody');
-            list.innerHTML = countdowns.length === 0 ? '<div style="color:#666; text-align:center; font-size:0.8em;">ምንም ዝግጅት የለም።</div>' : "";
+            list.innerHTML = countdowns.length === 0 ? '<div style="color:white; text-align:center;">No Events</div>' : "";
             countdowns.forEach(item => {
-                list.innerHTML += `<div class="countdown-item"><div><div style="font-size:0.7em; color:#888;">${item.note} (${item.monthName} ${item.day})</div><span class="item-timer" id="timer-${item.id}">--:--:--</span></div><button style="background:none; color:#ff4444; border:none; font-size:1.5em;" onclick="deleteItem(${item.id})">×</button></div>`;
+                list.innerHTML += `<div class="countdown-item"><span>${item.note}</span></div>`;
             });
         }
-
-        function deleteItem(id) {
-            if(confirm("ይጥፋ?")) {
-                countdowns = countdowns.filter(c => c.id !== id);
-                saveAndRefresh();
-            }
-        }
-
-        function exportData() {
-            const blob = new Blob([JSON.stringify(countdowns)], {type: 'application/json'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'ethio_flow_backup.json';
-            a.click();
-        }
-
-        function importData(event) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                countdowns = JSON.parse(e.target.result);
-                saveAndRefresh();
-                alert("ተመልሷል!");
-            };
-            reader.readAsText(event.target.files[0]);
-        }
-
-        setInterval(() => {
-            const now = Date.now();
-            countdowns.forEach(item => {
-                const el = document.getElementById(`timer-${item.id}`);
-                if(!el) return;
-                const dist = item.targetTimestamp - now;
-                if(dist < 0) { el.innerText = "ደርሷል!"; return; }
-                const d = Math.floor(dist / 86400000), h = Math.floor((dist % 86400000) / 3600000), m = Math.floor((dist % 3600000) / 60000), s = Math.floor((dist % 60000) / 1000);
-                el.innerText = `${d}ቀን ${h}ሰ ${m}ደ ${s}ሰ`;
-            });
-        }, 1000);
 
         window.onload = generateCalendar;
     </script>
