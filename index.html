@@ -13,7 +13,7 @@
         :root { --eth-blue: #1976D2; --greg-green: #2E7D32; --comb-gold: #FFA000; --adwa-red: #B71C1C; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; display: flex; height: 100vh; flex-direction: column; overflow: hidden; }
         
-        .header { background: var(--eth-blue); color: white; padding: 14px; font-weight: bold; text-align: center; transition: 0.3s; }
+        .header { background: var(--eth-blue); color: white; padding: 14px; font-weight: bold; text-align: center; }
         
         .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-box { background: #fff; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid #eee; }
@@ -21,19 +21,19 @@
         .box-label { font-size: 0.65rem; color: #666; font-weight: 800; display: block; }
         .box-value { font-size: 0.9rem; color: #222; font-weight: bold; }
         
-        .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: center; padding-inline: 15vw; }
+        .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: center; padding-inline: 10vw; }
         .calendar-wrapper::-webkit-scrollbar { display: none; }
         
-        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 500px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
+        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 480px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
         .month-title { padding: 15px; font-weight: 900; text-align: center; font-size: 1.2rem; border-bottom: 1px solid #f0f0f0; }
-        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 10px 0; font-size: 0.75rem; font-weight: bold; }
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 10px 0; font-size: 0.7rem; font-weight: bold; }
         
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; flex: 1; }
-        .cell { background: white; display: flex; align-items: center; justify-content: center; position: relative; font-weight: 700; font-size: 1rem; font-family: 'monospace'; }
+        .cell { background: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem; font-family: 'monospace'; }
         
         .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; margin: auto; }
         
-        .holiday-footer { padding: 12px; background: #fffffd; border-top: 1px dashed #eee; font-size: 0.75rem; text-align: center; border-radius: 0 0 24px 24px; }
+        .holiday-footer { padding: 10px; background: #fffffd; border-top: 1px dashed #eee; font-size: 0.7rem; text-align: center; border-radius: 0 0 24px 24px; color: var(--adwa-red); font-weight: bold; }
     </style>
 </head>
 <body>
@@ -47,7 +47,7 @@
         </div>
         <div class="info-box">
             <span class="box-label">ወር</span>
-            <span class="box-value">የካቲት</span>
+            <span class="box-value" id="currentMonthName">...</span>
         </div>
         <div class="info-box">
             <span class="box-label">ዓመት</span>
@@ -55,52 +55,52 @@
         </div>
     </div>
 
-    <div class="calendar-wrapper">
-        <div class="month-card" id="month-yekatit">
-            <div class="month-title">የካቲት 2018</div>
-            <div class="days-header">
-                <span>እሁድ</span><span>ሰኞ</span><span>ማክሰ</span><span>ረቡዕ</span><span>ሐሙስ</span><span>አርብ</span><span>ቅዳሜ</span>
-            </div>
-            <div class="grid" id="yekatitGrid">
-                <div class="cell">1</div><div class="cell">2</div><div class="cell">3</div>
-                <div class="cell">4</div><div class="cell">5</div><div class="cell">6</div>
-                <div class="cell">7</div><div class="cell">8</div><div class="cell">9</div>
-                <div class="cell">10</div><div class="cell">11</div><div class="cell">12</div>
-                <div class="cell">13</div><div class="cell">14</div><div class="cell">15</div>
-                <div class="cell">16</div><div class="cell">17</div><div class="cell">18</div>
-                <div class="cell">19</div><div class="cell">20</div><div class="cell">21</div>
-                <div class="cell">22</div><div class="cell">23</div><div class="cell">24</div>
-                <div class="cell">25</div><div class="cell">26</div><div class="cell">27</div>
-                <div class="cell">28</div><div class="cell">29</div><div class="cell">30</div>
-            </div>
-            <div class="holiday-footer">የካቲት 23 - የዓድዋ ድል በዓል 🇪🇹</div>
+    <div class="calendar-wrapper" id="main-calendar">
         </div>
-    </div>
 
     <script>
-        // Automatic Date Logic
-        function updateLiveCalendar() {
-            const now = new Date();
-            // Today's date is March 2, 2026 which is Yekatit 23, 2018
-            const ethioDay = 23; 
-            const ethioMonth = "የካቲት";
+        const monthNames = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
 
-            // 1. Update the Dashboard Text
-            document.getElementById('currentEthioDate').textContent = ethioMonth + " " + ethioDay;
+        function generateCalendar() {
+            const wrapper = document.getElementById('main-calendar');
+            const todayEthMonth = "የካቲት";
+            const todayEthDay = 23;
 
-            // 2. Find all day cells and highlight today
-            const cells = document.querySelectorAll('.cell');
-            cells.forEach(cell => {
-                if (cell.textContent.trim() === ethioDay.toString()) {
-                    cell.innerHTML = `<div class="today-mark">${ethioDay}</div>`;
+            monthNames.forEach((name, index) => {
+                const daysInMonth = (index === 12) ? 5 : 30; 
+                let cellsHtml = "";
+                
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const isToday = (name === todayEthMonth && i === todayEthDay);
+                    const cellContent = isToday ? `<div class="today-mark">${i}</div>` : i;
+                    cellsHtml += `<div class="cell">${cellContent}</div>`;
                 }
+
+                const holiday = (name === "የካቲት") ? "የካቲት 23 - የዓድዋ ድል በዓል 🇪🇹" : "";
+
+                wrapper.innerHTML += `
+                    <div class="month-card" id="month-${index}">
+                        <div class="month-title">${name} 2018</div>
+                        <div class="days-header">
+                            <span>እሁድ</span><span>ሰኞ</span><span>ማክሰ</span><span>ረቡዕ</span><span>ሐሙስ</span><span>አርብ</span><span>ቅዳሜ</span>
+                        </div>
+                        <div class="grid">${cellsHtml}</div>
+                        ${holiday ? `<div class="holiday-footer">${holiday}</div>` : '<div style="padding:10px;"></div>'}
+                    </div>`;
             });
+
+            document.getElementById('currentEthioDate').textContent = todayEthMonth + " " + todayEthDay;
+            document.getElementById('currentMonthName').textContent = todayEthMonth;
+
+            // Scroll to Yekatit automatically on load
+            setTimeout(() => {
+                const yekatitCard = document.getElementById('month-5');
+                yekatitCard.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+            }, 500);
         }
 
-        // Run when app opens
-        window.onload = updateLiveCalendar;
+        window.onload = generateCalendar;
 
-        // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
