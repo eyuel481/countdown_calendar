@@ -53,105 +53,129 @@
 
     <script>
         const bridge = document.getElementById('storageBridge');
-        let countdowns = [];
-        const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
-        const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 4];
-        let targetDay, targetMonthIdx, targetMonthName;
+let countdowns = [];
+const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
+const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 4];
+let targetDay, targetMonthIdx, targetMonthName;
 
-        // STORAGE BRIDGE LOGIC
-        window.addEventListener('message', (e) => {
-            if (e.data.type === 'LOAD_DATA') { countdowns = e.data.payload; renderList(); }
-        });
-        bridge.onload = () => bridge.contentWindow.postMessage({ type: 'GET' }, '*');
-        function requestSave() { bridge.contentWindow.postMessage({ type: 'SAVE', payload: countdowns }, '*'); renderList(); }
+// 1. NOTIFICATION SETUP
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
 
-        function generateCalendar() {
-            const wrapper = document.getElementById('main-calendar');
-            wrapper.innerHTML = "";
-            amhMonths.forEach((name, mIdx) => {
-                const days = (mIdx === 12) ? 6 : 30;
-                let cellsHtml = "";
-                for (let e = 0; e < offsets2018[mIdx]; e++) cellsHtml += `<div class="cell empty"></div>`;
-                for (let i = 1; i <= days; i++) {
-                    const isToday = (name === "የካቲት" && i === 23);
-                    cellsHtml += `<div class="cell" onclick="openModal('${name}', ${i}, ${mIdx})">${isToday ? `<div class="today-mark">${i}</div>` : i}</div>`;
-                }
-                wrapper.innerHTML += `<div class="month-card" id="month-${mIdx}"><div class="month-title">${name} 2018</div><div class="days-header"><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>አር</span><span>ቅዳ</span><span>እሁ</span></div><div class="grid">${cellsHtml}</div></div>`;
-            });
-            setTimeout(() => document.getElementById('month-5').scrollIntoView({inline:'center'}), 300);
-        }
-
-        function openModal(m, d, idx) { targetDay=d; targetMonthIdx=idx; targetMonthName=m; document.getElementById('modalHead').innerText=`${m} ${d}`; document.getElementById('overlay').style.display='block'; document.getElementById('countdownModal').style.display='block'; }
-        function closeModal() { document.getElementById('overlay').style.display='none'; document.getElementById('countdownModal').style.display='none'; }
-        
-        function addCountdown() {
-            const note = document.getElementById('userNote').value || "ዝግጅት";
-            const diff = ((targetMonthIdx * 30) + targetDay) - ((5 * 30) + 23);
-            if(diff < 0) { alert("ቀን ተሳስቷል!"); return; }
-            countdowns.push({ id: Date.now(), note, targetTimestamp: new Date().setHours(24,0,0,0) + ((diff-1)*86400000), monthName: targetMonthName, day: targetDay });
-            requestSave(); closeModal();
-        }
-
-        function renderList() {
-            const list = document.getElementById('listBody');
-            list.innerHTML = countdowns.length === 0 ? '<div style="color:#666; text-align:center; font-size:0.8em;">ምንም ዝግጅት የለም።</div>' : "";
-            countdowns.forEach(item => {
-                list.innerHTML += `<div class="countdown-item"><div><div style="font-size:0.7em; color:#888;">${item.note} (${item.monthName} ${item.day})</div><span class="item-timer" id="timer-${item.id}">--:--:--</span></div><button style="background:none; color:#ff4444; border:none; font-size:1.5em;" onclick="deleteItem(${item.id})">×</button></div>`;
-            });
-        }
-
-        function deleteItem(id) { if(confirm("ይጥፋ?")) { countdowns = countdowns.filter(c => c.id !== id); requestSave(); } }
-
-        setInterval(() => {
-            const now = Date.now();
-            countdowns.forEach(item => {
-                const el = document.getElementById(`timer-${item.id}`);
-                if(!el) return;
-                const dist = item.targetTimestamp - now;
-                if(dist < 0) { el.innerText = "ደርሷል!"; return; }
-                const d = Math.floor(dist / 86400000), h = Math.floor((dist % 86400000) / 3600000), m = Math.floor((dist % 3600000) / 60000), s = Math.floor((dist % 60000) / 1000);
-                el.innerText = `${d}ቀን ${h}ሰ ${m}ደ ${s}ሰ`;
-            });
-        }, 1000);
-
-        window.onload = generateCalendar;
-        // 1. Register the Service Worker & Ask Permission
-if ('serviceWorker' in navigator && 'Notification' in window) {
-    navigator.serviceWorker.register('sw.js').then(reg => {
-        console.log("Service Worker Registered");
+function askPermission() {
+    if (Notification.permission !== 'granted') {
         Notification.requestPermission();
-    });
-}
-
-// 2. Function to trigger a notification when a countdown hits 0
-function checkNotifications() {
-    const now = Date.now();
-    countdowns.forEach(item => {
-        // If the event time is reached (within a 2-second window)
-        if (Math.abs(item.targetTimestamp - now) < 2000 && !item.notified) {
-            sendPush(item.note);
-            item.notified = true; // Prevent double-notifying
-        }
-    });
-}
-
-function sendPush(eventTitle) {
-    if (Notification.permission === 'granted') {
-        navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification("Ethio-Flow Reminder!", {
-                body: `የእርስዎ ዝግጅት "${eventTitle}" አሁን ደርሷል!`,
-                vibrate: [200, 100, 200]
-            });
-        });
     }
 }
 
-// Add checkNotifications() inside your existing setInterval
+// 2. STORAGE BRIDGE LOGIC
+window.addEventListener('message', (e) => {
+    if (e.data.type === 'LOAD_DATA') { 
+        countdowns = e.data.payload; 
+        renderList(); 
+    }
+});
+bridge.onload = () => {
+    bridge.contentWindow.postMessage({ type: 'GET' }, '*');
+    askPermission(); // Ask when app starts
+};
+
+function requestSave() { 
+    bridge.contentWindow.postMessage({ type: 'SAVE', payload: countdowns }, '*'); 
+    renderList(); 
+}
+
+// 3. CALENDAR & NOTIFICATION TRIGGER
+function generateCalendar() {
+    const wrapper = document.getElementById('main-calendar');
+    wrapper.innerHTML = "";
+    amhMonths.forEach((name, mIdx) => {
+        const days = (mIdx === 12) ? 6 : 30;
+        let cellsHtml = "";
+        for (let e = 0; e < offsets2018[mIdx]; e++) cellsHtml += `<div class="cell empty"></div>`;
+        for (let i = 1; i <= days; i++) {
+            const isToday = (name === "የካቲት" && i === 23);
+            cellsHtml += `<div class="cell" onclick="openModal('${name}', ${i}, ${mIdx})">${isToday ? `<div class="today-mark">${i}</div>` : i}</div>`;
+        }
+        wrapper.innerHTML += `<div class="month-card" id="month-${mIdx}"><div class="month-title">${name} 2018</div><div class="days-header"><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>አር</span><span>ቅዳ</span><span>እሁ</span></div><div class="grid">${cellsHtml}</div></div>`;
+    });
+    setTimeout(() => document.getElementById('month-5').scrollIntoView({inline:'center'}), 300);
+}
+
+function openModal(m, d, idx) { 
+    targetDay=d; targetMonthIdx=idx; targetMonthName=m; 
+    document.getElementById('modalHead').innerText=`${m} ${d}`; 
+    document.getElementById('overlay').style.display='block'; 
+    document.getElementById('countdownModal').style.display='block'; 
+}
+
+function closeModal() { 
+    document.getElementById('overlay').style.display='none'; 
+    document.getElementById('countdownModal').style.display='none'; 
+}
+
+function addCountdown() {
+    const note = document.getElementById('userNote').value || "ዝግጅት";
+    const diff = ((targetMonthIdx * 30) + targetDay) - ((5 * 30) + 23);
+    if(diff < 0) { alert("ቀን ተሳስቷል!"); return; }
+    
+    countdowns.push({ 
+        id: Date.now(), 
+        note, 
+        targetTimestamp: new Date().setHours(24,0,0,0) + ((diff-1)*86400000), 
+        monthName: targetMonthName, 
+        day: targetDay,
+        notified: false // Tracking for push
+    });
+    requestSave(); 
+    closeModal();
+}
+
+function renderList() {
+    const list = document.getElementById('listBody');
+    list.innerHTML = countdowns.length === 0 ? '<div style="color:#666; text-align:center; font-size:0.8em;">ምንም ዝግጅት የለም።</div>' : "";
+    countdowns.forEach(item => {
+        list.innerHTML += `<div class="countdown-item"><div><div style="font-size:0.7em; color:#888;">${item.note}</div><span class="item-timer" id="timer-${item.id}">--:--:--</span></div><button style="background:none; color:#ff4444; border:none; font-size:1.5em;" onclick="deleteItem(${item.id})">×</button></div>`;
+    });
+}
+
+function deleteItem(id) { 
+    if(confirm("ይጥፋ?")) { 
+        countdowns = countdowns.filter(c => c.id !== id); 
+        requestSave(); 
+    } 
+}
+
+// BACKGROUND ALARM CHECK
 setInterval(() => {
-    // ... your existing timer code ...
-    checkNotifications();
+    const now = Date.now();
+    countdowns.forEach(item => {
+        const el = document.getElementById(`timer-${item.id}`);
+        if(!el) return;
+        const dist = item.targetTimestamp - now;
+        
+        // PUSH NOTIFICATION TRIGGER
+        if (dist <= 0 && !item.notified) {
+            if (Notification.permission === 'granted') {
+                new Notification("Ethio-Flow Reminder", {
+                    body: `የእርስዎ ዝግጅት "${item.note}" አሁን ደርሷል!`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3114/3114812.png'
+                });
+            }
+            item.notified = true;
+            requestSave();
+        }
+
+        if(dist < 0) { el.innerText = "ደርሷል!"; return; }
+        const d = Math.floor(dist / 86400000), h = Math.floor((dist % 86400000) / 3600000), m = Math.floor((dist % 3600000) / 60000), s = Math.floor((dist % 60000) / 1000);
+        el.innerText = `${d}ቀን ${h}ሰ ${m}ደ ${s}ሰ`;
+    });
 }, 1000);
+
+window.onload = generateCalendar;
     </script>
 </body>
 </html>
+
 
