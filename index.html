@@ -3,146 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethio-Flow 2018 Pro</title>
+    <title>Ethio-Flow Precision</title>
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#1976D2">
     <style>
-        :root { --eth-blue: #1976D2; --greg-green: #2E7D32; --comb-gold: #FFA000; --adwa-red: #B71C1C; }
+        :root { --eth-blue: #1976D2; --adwa-red: #B71C1C; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; display: flex; height: 100vh; flex-direction: column; overflow: hidden; }
         
-        /* Red Banner is now REMOVED as requested */
-
-        .header { background: var(--eth-blue); color: white; padding: 14px; font-weight: bold; text-align: center; transition: background 0.3s; }
+        .header { background: var(--eth-blue); color: white; padding: 14px; font-weight: bold; text-align: center; }
+        
         .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .info-box { background: #fff; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid #eee; cursor: pointer; }
-        .info-box.active-mode { border-color: var(--eth-blue); background: #e3f2fd; }
+        .info-box { background: #fff; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid #eee; }
         .box-label { font-size: 0.65em; color: #666; font-weight: 800; display: block; }
         .box-value { font-size: 0.9em; color: #222; font-weight: bold; }
         
+        /* Calendar Wrapper */
         .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: center; padding-inline: 15vw; scroll-behavior: smooth; }
         .calendar-wrapper::-webkit-scrollbar { display: none; }
-        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 500px; display: flex; flex-direction: column; transition: 0.4s; opacity: 0.4; transform: scale(0.9); box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
-        .month-card.active-month { opacity: 1; transform: scale(1); }
         
-        .month-title { padding: 15px; font-weight: 900; text-align: center; font-size: 1.2em; border-bottom: 1px solid #f0f0f0; }
-        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 10px 0; font-size: 0.75em; font-weight: bold; }
+        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 420px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
+        .month-title { padding: 15px; font-weight: 900; text-align: center; font-size: 1.2em; border-bottom: 1px solid #f0f0f0; color: var(--eth-blue); }
+        
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 10px 0; font-size: 0.7em; font-weight: bold; }
+        
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; flex: 1; }
-        .cell { background: white; display: flex; align-items: center; justify-content: center; position: relative; font-weight: 700; font-size: 1em; }
-        .greg-hint { position: absolute; top: 4px; right: 6px; font-size: 0.6em; color: var(--eth-blue); opacity: 0.8; }
+        .cell { background: white; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .cell:active { background: #e3f2fd; }
         
-        .holiday-footer { padding: 12px; background: #fffdfd; border-top: 1px dashed #eee; font-size: 0.75em; text-align: center; border-radius: 0 0 24px 24px; }
-        .holiday-item { color: #d32f2f; font-weight: bold; }
-        
-        .today-mark { background: var(--eth-blue); color: white !important; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        .holiday-mark { border: 2px solid #d32f2f; color: #d32f2f; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
-        .scroll-spacer { min-width: 15vw; flex-shrink: 0; }
+        .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+
+        /* Countdown Area */
+        #countdownContainer { max-height: 250px; overflow-y: auto; background: #1a1a1a; padding: 15px; border-top: 4px solid var(--eth-blue); }
+        .countdown-item { background: #2a2a2a; color: white; margin-bottom: 10px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
+        .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-size: 1.1em; font-weight: bold; }
+
+        /* Pop-up Modal (English as requested) */
+        #countdownModal { display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 25px; border-radius: 25px 25px 0 0; z-index: 2000; box-sizing: border-box; }
+        #overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500; }
+        .delete-btn { background: #ff4444; color: white; border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.8em; }
     </style>
 </head>
 <body>
-    <div class="header" id="mainHeader">የኢትዮጵያ ቀን መቁጠሪያ 2018</div>
-    
+
+    <div class="header">የኢትዮጵያ ዘመን አቆጣጠር (2018)</div>
+
     <div class="dashboard">
-        <div id="box-eth" class="info-box active-mode" onclick="switchMode('ETH')"><span class="box-label">ETHIOPIAN</span><span class="box-value">2018 E.C.</span></div>
-        <div id="box-greg" class="info-box" onclick="switchMode('GREG')"><span class="box-label">GREGORIAN</span><span class="box-value">2026 G.C.</span></div>
-        <div id="box-comb" class="info-box" onclick="switchMode('COMB')"><span class="box-label">COMBINED</span><span class="box-value">18 / 26</span></div>
+        <div class="info-box"><span class="box-label">ዛሬ</span><span class="box-value">የካቲት 23</span></div>
+        <div class="info-box"><span class="box-label">ወር</span><span class="box-value">የካቲት</span></div>
+        <div class="info-box"><span class="box-label">ዓመት</span><span class="box-value">2018</span></div>
     </div>
 
-    <div class="calendar-wrapper" id="calendarBody"></div>
+    <div class="calendar-wrapper" id="main-calendar"></div>
+
+    <div id="countdownContainer">
+        <div id="listBody"></div>
+    </div>
+
+    <div id="overlay" onclick="closeModal()"></div>
+    <div id="countdownModal">
+        <h3 id="modalHead" style="margin:0 0 10px 0;">New Countdown ⏳</h3>
+        <input type="text" id="userNote" placeholder="Event Name (e.g. My Trip)" style="width:100%; padding:15px; border:1px solid #ddd; border-radius:12px; margin-bottom:15px; box-sizing:border-box; font-size: 1rem;">
+        <button onclick="addCountdown()" style="background:var(--eth-blue); color:white; border:none; padding:15px; border-radius:12px; width:100%; font-weight:bold; font-size: 1rem;">Start Ticking</button>
+        <button onclick="closeModal()" style="background:transparent; color:#888; border:none; padding:10px; width:100%; margin-top:5px;">Cancel</button>
+    </div>
 
     <script>
-        const ethMonths = ["መስከረም", "ጥቅምት", "ህዳር", "ታህሳስ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜ"];
-        const gregMonths = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const ethOffs = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 0];
-        const gregOffs = [3, 6, 6, 2, 4, 0, 2, 5, 1, 3, 6, 1];
-        const gregDaysCount = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
+        let targetDay, targetMonthIdx, targetMonthName;
+        let countdowns = JSON.parse(localStorage.getItem('ethioFlow_Final')) || [];
 
-        const holidays = {
-            ETH: {"0-1":"እንቁጣጣሽ","0-17":"መስቀል","3-29":"ገና","4-11":"ጥምቀት","5-23":"የዓድዋ ድል","6-11":"ረመዳን","7-2":"ስቅለት","7-4":"ትንሣኤ","7-11":"ዒድ አል ፈጥር","7-23":"የላብ አደሮች","7-27":"አርበኞች","9-20":"ግንቦት 20","12-13":"ቡሄ","12-19":"መውሊድ"},
-            GREG: {"8-11":"New Year","8-27":"Meskel","0-7":"Genna","0-19":"Timket","2-1":"Adwa Victory","2-20":"Ramadan","3-10":"Good Friday","3-12":"Easter","3-19":"Eid al-Fitr","4-1":"Labour Day","4-5":"Patriots' Day","4-28":"Ginbot 20","7-19":"Buhe","7-25":"Mawlid"}
-        };
-
-        const gregStartMap = [{d:11,m:8},{d:11,m:9},{d:10,m:10},{d:10,m:11},{d:9,m:0},{d:8,m:1},{d:10,m:2},{d:9,m:3},{d:9,m:4},{d:8,m:5},{d:8,m:6},{d:7,m:7},{d:6,m:8}];
-        let currentMode = 'ETH';
-
-        function renderCalendar() {
-            const container = document.getElementById('calendarBody');
-            container.innerHTML = '<div class="scroll-spacer"></div>';
-            const isGreg = currentMode === 'GREG';
-            const months = isGreg ? gregMonths : ethMonths;
-
-            // SMART TODAY LOGIC: Detects current real-world date
-            const realToday = new Date();
-            const realMonth = realToday.getMonth(); // 2 for March
-            const realDay = realToday.getDate();    // 2 for the 2nd
-
-            months.forEach((mName, idx) => {
-                let dCount = isGreg ? gregDaysCount[idx] : (idx === 12 ? 6 : 30);
-                let offset = isGreg ? gregOffs[idx] : ethOffs[idx];
-                let html = `<div class="month-card"><div class="month-title">${mName}</div>
-                    <div class="days-header">` + ["ሰኞ","ማክ","ረቡ","ሐሙ","ዓር","ቅዳ","እሁ"].map(d => `<span>${d}</span>`).join('') + `</div>
-                    <div class="grid">`;
-                
-                let hList = [];
-                for (let e = 0; e < offset; e++) html += `<div class="cell" style="background:#fafafa"></div>`;
-
-                for (let d = 1; d <= dCount; d++) {
-                    let hName = isGreg ? holidays.GREG[`${idx}-${d}`] : holidays.ETH[`${idx}-${d}`];
-                    if(hName) hList.push(`${d} - ${hName}`);
-
-                    let hint = "";
-                    if (currentMode === 'COMB') {
-                        let gS = gregStartMap[idx];
-                        let gD = gS.d + (d - 1);
-                        let limit = gregDaysCount[gS.m];
-                        if (gD > limit) gD -= limit;
-                        hint = `<span class="greg-hint">${gD}</span>`;
-                    }
-
-                    // DYNAMIC HIGHLIGHT: Corrected for March 2 / Yekatit 23
-                    let isToday = false;
-                    if(currentMode === 'ETH' || currentMode === 'COMB') {
-                        if(idx === 5 && d === 23) isToday = true; // Yekatit 23
-                    } else if(currentMode === 'GREG') {
-                        if(idx === 2 && d === 2) isToday = true; // March 2
-                    }
-
-                    let marker = isToday ? "today-mark" : (hName ? "holiday-mark" : "");
-                    html += `<div class="cell">${hint}<div class="${marker}">${d}</div></div>`;
+        function generateCalendar() {
+            const wrapper = document.getElementById('main-calendar');
+            amhMonths.forEach((name, mIdx) => {
+                const daysInMonth = (mIdx === 12) ? 6 : 30; 
+                let cellsHtml = "";
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const isToday = (name === "የካቲት" && i === 23);
+                    const cellClass = isToday ? 'cell today-mark' : 'cell';
+                    cellsHtml += `<div class="${cellClass}" onclick="openModal('${name}', ${i}, ${mIdx})">${i}</div>`;
                 }
-                container.innerHTML += html + `</div><div class="holiday-footer">${hList.map(h => `<div class="holiday-item">${h}</div>`).join('') || '---'}</div></div>`;
+                wrapper.innerHTML += `
+                    <div class="month-card" id="month-${mIdx}">
+                        <div class="month-title">${name} 2018</div>
+                        <div class="days-header">
+                            <span>እሁ</span><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>አር</span><span>ቅዳ</span>
+                        </div>
+                        <div class="grid">${cellsHtml}</div>
+                    </div>`;
             });
-            container.innerHTML += '<div class="scroll-spacer"></div>';
-            initObserver();
+            setTimeout(() => document.getElementById('month-5').scrollIntoView({inline:'center'}), 300);
+            renderList();
         }
 
-        function initObserver() {
-            const obs = new IntersectionObserver(e => e.forEach(x => x.target.classList.toggle('active-month', x.isIntersecting)), { threshold: 0.6 });
-            document.querySelectorAll('.month-card').forEach(c => obs.observe(c));
+        function openModal(month, day, mIdx) {
+            targetDay = day; targetMonthIdx = mIdx; targetMonthName = month;
+            document.getElementById('modalHead').innerText = `Set for: ${month} ${day}`;
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('countdownModal').style.display = 'block';
+            document.getElementById('userNote').focus();
         }
 
-        function switchMode(m) {
-            currentMode = m;
-            const header = document.getElementById('mainHeader');
-            document.querySelectorAll('.info-box').forEach(b => b.classList.remove('active-mode'));
-            const activeBox = document.getElementById('box-' + m.toLowerCase());
-            activeBox.classList.add('active-mode');
-
-            if(m === 'ETH') { header.style.background = 'var(--eth-blue)'; header.innerText = "የኢትዮጵያ ቀን መቁጠሪያ 2018"; }
-            else if(m === 'GREG') { header.style.background = 'var(--greg-green)'; header.innerText = "Gregorian Calendar 2026"; }
-            else { header.style.background = 'var(--comb-gold)'; header.innerText = "Ethiopian & Gregorian 2018/26"; }
-
-            renderCalendar();
-            let sIdx = (m === 'GREG') ? 2 : 5; 
-            setTimeout(() => document.querySelectorAll('.month-card')[sIdx].scrollIntoView({behavior:'smooth', inline:'center'}), 100);
+        function closeModal() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('countdownModal').style.display = 'none';
         }
 
-        renderCalendar();
-        setTimeout(() => document.querySelectorAll('.month-card')[5].scrollIntoView({inline:'center'}), 200);
+        function addCountdown() {
+            const note = document.getElementById('userNote').value || "Event";
+            const currentEthMonthIdx = 5; // Yekatit
+            const currentEthDay = 23;
+            const diffInDays = ((targetMonthIdx * 30) + targetDay) - ((currentEthMonthIdx * 30) + currentEthDay);
 
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+            if(diffInDays < 0) { alert("Please select a future date!"); return; }
+
+            // Precise Midnight Calculation
+            const tonightMidnight = new Date();
+            tonightMidnight.setHours(24, 0, 0, 0); 
+
+            const targetTimestamp = tonightMidnight.getTime() + ((diffInDays - 1) * 86400000);
+
+            countdowns.push({ id: Date.now(), note, targetTimestamp, monthName: targetMonthName, day: targetDay });
+            localStorage.setItem('ethioFlow_Final', JSON.stringify(countdowns));
+            document.getElementById('userNote').value = "";
+            closeModal();
+            renderList();
         }
+
+        function renderList() {
+            const list = document.getElementById('listBody');
+            list.innerHTML = countdowns.length === 0 ? '<div style="color:#666; text-align:center; font-size:0.8em;">No Active Events</div>' : "";
+            countdowns.forEach(item => {
+                list.innerHTML += `
+                    <div class="countdown-item">
+                        <div style="display:flex; flex-direction:column;">
+                            <span style="font-size:0.7em; color:#aaa; text-transform:uppercase;">${item.note}</span>
+                            <span class="item-timer" id="timer-${item.id}">--:--:--</span>
+                        </div>
+                        <button class="delete-btn" onclick="deleteItem(${item.id})">Remove</button>
+                    </div>`;
+            });
+        }
+
+        function deleteItem(id) {
+            countdowns = countdowns.filter(c => c.id !== id);
+            localStorage.setItem('ethioFlow_Final', JSON.stringify(countdowns));
+            renderList();
+        }
+
+        setInterval(() => {
+            const now = Date.now();
+            countdowns.forEach(item => {
+                const el = document.getElementById(`timer-${item.id}`);
+                if(!el) return;
+                const dist = item.targetTimestamp - now;
+                if(dist < 0) { el.innerText = "DUE NOW!"; el.style.color = "#ff4444"; return; }
+                
+                const d = Math.floor(dist / 86400000);
+                const h = Math.floor((dist % 86400000) / 3600000);
+                const m = Math.floor((dist % 3600000) / 60000);
+                const s = Math.floor((dist % 60000) / 1000);
+                el.innerText = `${d}d ${h}h ${m}m ${s}s`;
+            });
+        }, 1000);
+
+        window.onload = generateCalendar;
     </script>
 </body>
 </html>
