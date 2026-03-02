@@ -3,51 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ethio-Flow Precision</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1976D2">
+    <title>Ethio-Flow Pro 2018</title>
     <style>
         :root { --eth-blue: #1976D2; --adwa-red: #B71C1C; }
         body { font-family: 'Segoe UI', sans-serif; margin: 0; background: #f0f2f5; display: flex; height: 100vh; flex-direction: column; overflow: hidden; }
-        
         .header { background: var(--eth-blue); color: white; padding: 14px; font-weight: bold; text-align: center; }
-        
         .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         .info-box { background: #fff; border-radius: 12px; padding: 10px; text-align: center; border: 2px solid #eee; }
         .box-label { font-size: 0.65em; color: #666; font-weight: 800; display: block; }
         .box-value { font-size: 0.9em; color: #222; font-weight: bold; }
         
-        /* Calendar Wrapper */
         .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: center; padding-inline: 15vw; scroll-behavior: smooth; }
         .calendar-wrapper::-webkit-scrollbar { display: none; }
-        
-        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 420px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
-        .month-title { padding: 15px; font-weight: 900; text-align: center; font-size: 1.2em; border-bottom: 1px solid #f0f0f0; color: var(--eth-blue); }
-        
-        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 10px 0; font-size: 0.7em; font-weight: bold; }
+        .month-card { min-width: 320px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; height: 440px; display: flex; flex-direction: column; box-shadow: 0 4px 15px rgba(0,0,0,0.08); border: 1px solid #ddd; }
+        .month-title { padding: 12px; font-weight: 900; text-align: center; font-size: 1.1em; border-bottom: 1px solid #f0f0f0; color: var(--eth-blue); }
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8f9fa; color: #666; text-align: center; padding: 8px 0; font-size: 0.7em; font-weight: bold; }
         
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; flex: 1; }
-        .cell { background: white; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-        .cell:active { background: #e3f2fd; }
+        .cell { background: white; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+        .empty { background: #fdfdfd; cursor: default; }
         
-        .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
 
-        /* Countdown Area */
-        #countdownContainer { max-height: 250px; overflow-y: auto; background: #1a1a1a; padding: 15px; border-top: 4px solid var(--eth-blue); }
-        .countdown-item { background: #2a2a2a; color: white; margin-bottom: 10px; padding: 15px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
-        .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-size: 1.1em; font-weight: bold; }
+        #countdownContainer { max-height: 200px; overflow-y: auto; background: #1a1a1a; padding: 12px; border-top: 4px solid var(--eth-blue); }
+        .countdown-item { background: #2a2a2a; color: white; margin-bottom: 8px; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
+        .item-timer { font-family: monospace; color: #00ff00; font-size: 1rem; }
 
-        /* Pop-up Modal (English as requested) */
         #countdownModal { display: none; position: fixed; bottom: 0; width: 100%; background: white; padding: 25px; border-radius: 25px 25px 0 0; z-index: 2000; box-sizing: border-box; }
         #overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1500; }
-        .delete-btn { background: #ff4444; color: white; border: none; border-radius: 6px; padding: 5px 10px; font-size: 0.8em; }
     </style>
 </head>
 <body>
 
-    <div class="header">የኢትዮጵያ ዘመን አቆጣጠር (2018)</div>
+    <div class="header">የኢትዮጵያ ዘመን አቆጣጠር 2018</div>
 
     <div class="dashboard">
         <div class="info-box"><span class="box-label">ዛሬ</span><span class="box-value">የካቲት 23</span></div>
@@ -57,39 +45,44 @@
 
     <div class="calendar-wrapper" id="main-calendar"></div>
 
-    <div id="countdownContainer">
-        <div id="listBody"></div>
-    </div>
+    <div id="countdownContainer"><div id="listBody"></div></div>
 
     <div id="overlay" onclick="closeModal()"></div>
     <div id="countdownModal">
-        <h3 id="modalHead" style="margin:0 0 10px 0;">New Countdown ⏳</h3>
-        <input type="text" id="userNote" placeholder="Event Name (e.g. My Trip)" style="width:100%; padding:15px; border:1px solid #ddd; border-radius:12px; margin-bottom:15px; box-sizing:border-box; font-size: 1rem;">
-        <button onclick="addCountdown()" style="background:var(--eth-blue); color:white; border:none; padding:15px; border-radius:12px; width:100%; font-weight:bold; font-size: 1rem;">Start Ticking</button>
-        <button onclick="closeModal()" style="background:transparent; color:#888; border:none; padding:10px; width:100%; margin-top:5px;">Cancel</button>
+        <h3 id="modalHead">New Countdown ⏳</h3>
+        <input type="text" id="userNote" placeholder="Event Name..." style="width:100%; padding:15px; border:1px solid #ddd; border-radius:12px; margin-bottom:15px; box-sizing:border-box;">
+        <button onclick="addCountdown()" style="background:var(--eth-blue); color:white; border:none; padding:15px; border-radius:12px; width:100%; font-weight:bold;">Start</button>
     </div>
 
     <script>
         const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
+        // Correct weekday offsets for 2018 E.C. (0=Mon, 1=Tue... 6=Sun)
+        const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 6]; 
         let targetDay, targetMonthIdx, targetMonthName;
-        let countdowns = JSON.parse(localStorage.getItem('ethioFlow_Final')) || [];
+        let countdowns = JSON.parse(localStorage.getItem('ethioFlow_Precise')) || [];
 
         function generateCalendar() {
             const wrapper = document.getElementById('main-calendar');
+            wrapper.innerHTML = "";
             amhMonths.forEach((name, mIdx) => {
                 const daysInMonth = (mIdx === 12) ? 6 : 30; 
+                const startOffset = offsets2018[mIdx];
                 let cellsHtml = "";
+
+                // Fill empty cells for correct alignment
+                for (let e = 0; e < startOffset; e++) {
+                    cellsHtml += `<div class="cell empty"></div>`;
+                }
+
                 for (let i = 1; i <= daysInMonth; i++) {
                     const isToday = (name === "የካቲት" && i === 23);
-                    const cellClass = isToday ? 'cell today-mark' : 'cell';
-                    cellsHtml += `<div class="${cellClass}" onclick="openModal('${name}', ${i}, ${mIdx})">${i}</div>`;
+                    const cellContent = isToday ? `<div class="today-mark">${i}</div>` : i;
+                    cellsHtml += `<div class="cell" onclick="openModal('${name}', ${i}, ${mIdx})">${cellContent}</div>`;
                 }
                 wrapper.innerHTML += `
                     <div class="month-card" id="month-${mIdx}">
                         <div class="month-title">${name} 2018</div>
-                        <div class="days-header">
-                            <span>እሁ</span><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>አር</span><span>ቅዳ</span>
-                        </div>
+                        <div class="days-header"><span>ሰኞ</span><span>ማክ</span><span>ረቡ</span><span>ሐሙ</span><span>አር</span><span>ቅዳ</span><span>እሁ</span></div>
                         <div class="grid">${cellsHtml}</div>
                     </div>`;
             });
@@ -102,7 +95,6 @@
             document.getElementById('modalHead').innerText = `Set for: ${month} ${day}`;
             document.getElementById('overlay').style.display = 'block';
             document.getElementById('countdownModal').style.display = 'block';
-            document.getElementById('userNote').focus();
         }
 
         function closeModal() {
@@ -112,20 +104,12 @@
 
         function addCountdown() {
             const note = document.getElementById('userNote').value || "Event";
-            const currentEthMonthIdx = 5; // Yekatit
-            const currentEthDay = 23;
-            const diffInDays = ((targetMonthIdx * 30) + targetDay) - ((currentEthMonthIdx * 30) + currentEthDay);
+            const diffInDays = ((targetMonthIdx * 30) + targetDay) - ((5 * 30) + 23);
+            if(diffInDays < 0) { alert("Select a future date!"); return; }
 
-            if(diffInDays < 0) { alert("Please select a future date!"); return; }
-
-            // Precise Midnight Calculation
-            const tonightMidnight = new Date();
-            tonightMidnight.setHours(24, 0, 0, 0); 
-
-            const targetTimestamp = tonightMidnight.getTime() + ((diffInDays - 1) * 86400000);
-
+            const targetTimestamp = new Date().setHours(24, 0, 0, 0) + ((diffInDays - 1) * 86400000);
             countdowns.push({ id: Date.now(), note, targetTimestamp, monthName: targetMonthName, day: targetDay });
-            localStorage.setItem('ethioFlow_Final', JSON.stringify(countdowns));
+            localStorage.setItem('ethioFlow_Precise', JSON.stringify(countdowns));
             document.getElementById('userNote').value = "";
             closeModal();
             renderList();
@@ -135,20 +119,13 @@
             const list = document.getElementById('listBody');
             list.innerHTML = countdowns.length === 0 ? '<div style="color:#666; text-align:center; font-size:0.8em;">No Active Events</div>' : "";
             countdowns.forEach(item => {
-                list.innerHTML += `
-                    <div class="countdown-item">
-                        <div style="display:flex; flex-direction:column;">
-                            <span style="font-size:0.7em; color:#aaa; text-transform:uppercase;">${item.note}</span>
-                            <span class="item-timer" id="timer-${item.id}">--:--:--</span>
-                        </div>
-                        <button class="delete-btn" onclick="deleteItem(${item.id})">Remove</button>
-                    </div>`;
+                list.innerHTML += `<div class="countdown-item"><div><div style="font-size:0.7em; color:#aaa;">${item.note}</div><div class="item-timer" id="timer-${item.id}">--:--:--</div></div><button style="background:#444; color:white; border:none; border-radius:5px; padding:5px 10px;" onclick="deleteItem(${item.id})">×</button></div>`;
             });
         }
 
         function deleteItem(id) {
             countdowns = countdowns.filter(c => c.id !== id);
-            localStorage.setItem('ethioFlow_Final', JSON.stringify(countdowns));
+            localStorage.setItem('ethioFlow_Precise', JSON.stringify(countdowns));
             renderList();
         }
 
@@ -158,8 +135,7 @@
                 const el = document.getElementById(`timer-${item.id}`);
                 if(!el) return;
                 const dist = item.targetTimestamp - now;
-                if(dist < 0) { el.innerText = "DUE NOW!"; el.style.color = "#ff4444"; return; }
-                
+                if(dist < 0) { el.innerText = "DUE NOW!"; return; }
                 const d = Math.floor(dist / 86400000);
                 const h = Math.floor((dist % 86400000) / 3600000);
                 const m = Math.floor((dist % 3600000) / 60000);
