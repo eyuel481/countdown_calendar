@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head><title>Ethio-Flow Data Safe</title></head>
+<body>
+<script>
+    const DB_KEY = 'ETHIO_FLOW_MASTER_DATA';
+
+    window.addEventListener('message', function(event) {
+        // Handle requests from your main app
+        if (event.data.type === 'SAVE') {
+            localStorage.setItem(DB_KEY, JSON.stringify(event.data.payload));
+            event.source.postMessage({ type: 'SAVE_CONFIRMED' }, event.origin);
+        } 
+        else if (event.data.type === 'GET') {
+            const data = JSON.parse(localStorage.getItem(DB_KEY)) || [];
+            event.source.postMessage({ type: 'LOAD_DATA', payload: data }, event.origin);
+        }
+    });
+</script>
+</body>
+</html>
