@@ -135,6 +135,14 @@
         }, 1000);
 
         window.onload = () => { generate(); askNotify(); };
+        if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Offline mode active!'))
+            .catch(err => console.log('Offline setup failed', err));
+    });
+        }
     </script>
 </body>
 </html>
+
