@@ -10,37 +10,29 @@
         :root { --eth-blue: #1976D2; --adwa-red: #B71C1C; --bg: #f4f7f9; }
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; }
         body { display: flex; flex-direction: column; }
-        
-        /* Header & Dashboard */
         .header { background: var(--eth-blue); color: white; padding: 25px 16px 12px; font-weight: 800; text-align: center; }
         .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: white; border-bottom: 1px solid #ddd; }
         .info-box { background: #f8f9fa; border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #eee; }
         .box-label { font-size: 0.6em; color: #666; font-weight: 800; display: block; }
         .box-value { font-size: 0.85em; color: #222; font-weight: 700; }
-
-        /* Calendar Styling */
         .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: flex-start; padding-inline: 12vw; scroll-behavior: smooth; }
         .calendar-wrapper::-webkit-scrollbar { display: none; }
-        
         .month-card { min-width: 310px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eee; overflow: hidden; }
-        .month-title { padding: 15px; font-weight: 800; text-align: center; color: var(--eth-blue); border-bottom: 1px solid #f0f0f0; }
-        
-        /* Day Names Header */
+        .month-title { padding: 15px; font-weight: 800; text-align: center; color: var(--eth-blue); }
         .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; color: #94a3b8; text-align: center; padding: 8px 0; font-size: 0.7em; font-weight: 800; border-bottom: 1px solid #eee; }
-        
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
         .cell { background: white; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; font-size: 0.9em; }
         .empty { background: #f9f9f9; }
         .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-
-        /* Countdown List */
         #countdownContainer { max-height: 250px; overflow-y: auto; background: #121212; padding: 15px; border-top: 4px solid var(--eth-blue); }
         .countdown-item { background: #1e1e1e; color: white; margin-bottom: 10px; padding: 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
         .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-weight: bold; font-size: 0.85em; }
     </style>
 </head>
 <body>
-<iframe id="storageBridge" src="storage.html" style="display:none;"></iframe>
+
+    <iframe id="storageBridge" src="storage.html" style="display:none;"></iframe>
+
     <div class="header">የኢትዮጵያ ዘመን አቆጣጠር 2018</div>
     <div class="dashboard">
         <div class="info-box"><span class="box-label">ዛሬ</span><span id="live-day" class="box-value">--</span></div>
@@ -52,20 +44,30 @@
     <div id="countdownContainer"><div id="listBody"></div></div>
 
     <script>
-        // OFFLINE SERVICE WORKER
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js');
-            });
-        }
-
+        const bridge = document.getElementById('storageBridge');
+        let countdowns = [];
         const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
         const dayNames = ["ሰኞ", "ማክ", "ረቡ", "ሐሙ", "አር", "ቅዳ", "እሁ"];
         const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 4];
-        
-        const DB_KEY = 'ETHIO_FLOW_PRO_V4';
-        let countdowns = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
+        // 1. LINK TO STORAGE.HTML
+        window.addEventListener('message', (e) => {
+            if (e.data.type === 'LOAD_DATA') {
+                countdowns = e.data.payload;
+                render();
+            }
+        });
+
+        bridge.onload = () => {
+            bridge.contentWindow.postMessage({ type: 'GET' }, '*');
+        };
+
+        function requestSave() {
+            bridge.contentWindow.postMessage({ type: 'SAVE', payload: countdowns }, '*');
+            render();
+        }
+
+        // 2. LIVE DATE LOGIC
         function updateLiveDate() {
             const now = new Date();
             const start = new Date("2025-09-11"); 
@@ -78,6 +80,7 @@
             return { mIdx, day };
         }
 
+        // 3. CALENDAR WITH DAY NAMES
         function generateCalendar() {
             const wrapper = document.getElementById('main-calendar');
             const today = updateLiveDate();
@@ -85,50 +88,30 @@
 
             amhMonths.forEach((name, mIdx) => {
                 const days = (mIdx === 12) ? 6 : 30;
-                
-                // Day Names Header
-                let dayHeaderHtml = `<div class="days-header">`;
-                dayNames.forEach(dName => dayHeaderHtml += `<span>${dName}</span>`);
-                dayHeaderHtml += `</div>`;
+                let dayHeader = `<div class="days-header">`;
+                dayNames.forEach(d => dayHeader += `<span>${d}</span>`);
+                dayHeader += `</div>`;
 
                 let cells = "";
-                // Empty slots for alignment
-                for (let e = 0; e < offsets2018[mIdx]; e++) {
-                    cells += `<div class="cell empty"></div>`;
-                }
-                // Actual Days
+                for (let e = 0; e < offsets2018[mIdx]; e++) cells += `<div class="cell empty"></div>`;
                 for (let i = 1; i <= days; i++) {
                     const isToday = (mIdx === today.mIdx && i === today.day);
-                    cells += `<div class="cell" onclick="addEvent('${name}', ${i}, ${mIdx})">
-                        ${isToday ? `<div class="today-mark">${i}</div>` : i}
-                    </div>`;
+                    cells += `<div class="cell" onclick="addEvent('${name}', ${i}, ${mIdx})">${isToday ? `<div class="today-mark">${i}</div>` : i}</div>`;
                 }
-
-                wrapper.innerHTML += `
-                    <div class="month-card" id="m-${mIdx}">
-                        <div class="month-title">${name} 2018</div>
-                        ${dayHeaderHtml}
-                        <div class="grid">${cells}</div>
-                    </div>`;
+                wrapper.innerHTML += `<div class="month-card" id="m-${mIdx}"><div class="month-title">${name} 2018</div>${dayHeader}<div class="grid">${cells}</div></div>`;
             });
-            
-            setTimeout(() => {
-                const el = document.getElementById('m-'+today.mIdx);
-                if(el) el.scrollIntoView({inline:'center'});
-            }, 300);
-            render();
+            setTimeout(() => document.getElementById('m-'+today.mIdx).scrollIntoView({inline:'center'}), 300);
         }
 
         function addEvent(m, d, idx) {
-            const note = prompt(`${m} ${d} - ዝግጅት ያስገቡ:`);
+            const note = prompt(`${m} ${d} - ዝግጅት?`);
             if(!note) return;
             const startYear = new Date("2025-09-11").getTime();
             const targetTime = startYear + (((idx * 30) + (d - 1)) * 86400000);
             countdowns.push({ id: Date.now(), note, target: targetTime, m, d });
-            save();
+            requestSave();
         }
 
-        function save() { localStorage.setItem(DB_KEY, JSON.stringify(countdowns)); render(); }
         function render() {
             const list = document.getElementById('listBody');
             list.innerHTML = "";
@@ -141,19 +124,16 @@
             });
         }
 
-        function del(id) { countdowns = countdowns.filter(c => c.id !== id); save(); }
+        function del(id) { countdowns = countdowns.filter(c => c.id !== id); requestSave(); }
 
-        // LIVE COUNTDOWN TIMER
+        // 4. LIVE TIMER (Days, Hours, Min, Sec)
         setInterval(() => {
             const now = Date.now();
             countdowns.forEach(item => {
                 const el = document.getElementById(`t-${item.id}`);
                 if (!el) return;
                 const dist = item.target - now;
-                
-                if (dist < 0) {
-                    el.innerText = "ደርሷል!";
-                } else {
+                if (dist < 0) { el.innerText = "ደርሷል!"; } else {
                     const d = Math.floor(dist / 86400000);
                     const h = Math.floor((dist % 86400000) / 3600000);
                     const m = Math.floor((dist % 3600000) / 60000);
@@ -164,31 +144,6 @@
         }, 1000);
 
         window.onload = generateCalendar;
-        const bridge = document.getElementById('storageBridge');
-
-// To SAVE data to the safe
-function saveDataToSafe(yourData) {
-    bridge.contentWindow.postMessage({ 
-        type: 'SAVE', 
-        payload: yourData 
-    }, '*');
-}
-
-// To GET data from the safe when the app starts
-function loadDataFromSafe() {
-    bridge.contentWindow.postMessage({ type: 'GET' }, '*');
-        }
-        window.addEventListener('message', (event) => {
-    // Only accept messages from your storage file
-    if (event.data.type === 'LOAD_DATA') {
-        const mySavedData = event.data.payload;
-        console.log("Data received from safe:", mySavedData);
-        
-        // Now you can update your calendar with this data
-        countdowns = mySavedData;
-        renderList(); 
-    }
-});
     </script>
 </body>
 </html>
