@@ -146,8 +146,52 @@
             .catch(err => console.log('Offline setup failed', err));
     });
         }
+        function updateLiveDate() {
+    const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
+    
+    // Calculate Ethio Date for 2018 (Approximate logic for the current period)
+    const now = new Date();
+    const startOfEthioYear = new Date("2025-09-11"); // Meskerem 1, 2018
+    
+    const diffInMs = now - startOfEthioYear;
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    
+    let ethMonthIdx = Math.floor(diffInDays / 30);
+    let ethDay = (diffInDays % 30) + 1;
+    
+    // Handle Pagume
+    if (ethMonthIdx > 12) {
+        ethMonthIdx = 12;
+        ethDay = diffInDays - (12 * 30) + 1;
+    }
+
+    // Update the Dashboard
+    document.getElementById('today-day').innerText = amhMonths[ethMonthIdx] + " " + ethDay;
+    document.getElementById('today-month').innerText = amhMonths[ethMonthIdx];
+    document.getElementById('today-year').innerText = "2018";
+    
+    // Highlight the blue box in the calendar for today
+    highlightToday(ethMonthIdx, ethDay);
+}
+
+function highlightToday(mIdx, day) {
+    // This finds the cell in the calendar and makes it blue automatically
+    const monthCards = document.querySelectorAll('.month-card');
+    const todayCard = monthCards[mIdx];
+    if (todayCard) {
+        const cells = todayCard.querySelectorAll('.cell:not(.empty)');
+        cells[day - 1].classList.add('today-mark');
+    }
+}
+
+// Call this inside window.onload
+window.onload = () => {
+    generateCalendar(); 
+    updateLiveDate();
+};
     </script>
 </body>
 </html>
+
 
 
