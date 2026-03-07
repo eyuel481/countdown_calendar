@@ -4,194 +4,126 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Ethio-Flow Pro</title>
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Ethio-Flow Pro 2018</title>
+    
     <style>
         :root { --eth-blue: #1976D2; --adwa-red: #B71C1C; --bg: #f4f7f9; }
         html, body { height: 100%; margin: 0; padding: 0; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', sans-serif; }
         body { display: flex; flex-direction: column; }
-        .header { background: var(--eth-blue); color: white; padding: 20px 16px 12px; font-weight: 800; text-align: center; }
+
+        .header { background: var(--eth-blue); color: white; padding: 25px 16px 12px; font-weight: 800; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        
+        .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; background: white; border-bottom: 1px solid #ddd; }
+        .info-box { background: #f8f9fa; border-radius: 12px; padding: 10px; text-align: center; border: 1px solid #eee; }
+        .box-label { font-size: 0.6em; color: #666; font-weight: 800; display: block; margin-bottom: 2px; }
+        .box-value { font-size: 0.85em; color: #222; font-weight: 700; }
+
         .calendar-wrapper { flex: 1; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; padding: 20px 0; gap: 25px; align-items: flex-start; padding-inline: 12vw; scroll-behavior: smooth; }
         .calendar-wrapper::-webkit-scrollbar { display: none; }
+        
         .month-card { min-width: 310px; background: white; border-radius: 24px; scroll-snap-align: center; flex-shrink: 0; box-shadow: 0 8px 20px rgba(0,0,0,0.06); border: 1px solid #eee; overflow: hidden; }
-        .month-title { padding: 15px; font-weight: 800; text-align: center; color: var(--eth-blue); border-bottom: 1px solid #f0f0f0; }
+        .month-title { padding: 15px; font-weight: 800; text-align: center; font-size: 1.1em; color: var(--eth-blue); border-bottom: 1px solid #f0f0f0; }
+        .days-header { display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; color: #94a3b8; text-align: center; padding: 8px 0; font-size: 0.7em; font-weight: 800; }
+        
         .grid { display: grid; grid-template-columns: repeat(7, 1fr); background: #eee; gap: 1px; }
         .cell { background: white; height: 50px; display: flex; align-items: center; justify-content: center; font-weight: 700; cursor: pointer; }
-        .today-mark { background: var(--eth-blue); color: white; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-        #countdownContainer { max-height: 280px; overflow-y: auto; background: #121212; padding: 15px; border-top: 4px solid var(--eth-blue); }
+        .empty { background: #fafafa; }
+        .today-mark { background: var(--eth-blue) !important; color: white !important; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+
+        #countdownContainer { max-height: 250px; overflow-y: auto; background: #121212; padding: 15px; border-top: 4px solid var(--eth-blue); }
         .countdown-item { background: #1e1e1e; color: white; margin-bottom: 10px; padding: 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
-        .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-size: 1.1em; font-weight: bold; }
-        .btn-test { background: #333; color: #00ff00; border: 1px solid #444; padding: 5px 10px; border-radius: 5px; font-size: 10px; margin-top: 10px; width: 100%; cursor: pointer; }
+        .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-weight: bold; }
     </style>
 </head>
 <body>
-<div class="dashboard">
-    <div class="info-box"><span class="box-label">ዛሬ</span><span id="today-day" class="box-value">--</span></div>
-    <div class="info-box"><span class="box-label">ወር</span><span id="today-month" class="box-value">--</span></div>
-    <div class="info-box"><span class="box-label">ዓመት</span><span id="today-year" class="box-value">--</span></div>
-</div>
+
     <div class="header">የኢትዮጵያ ዘመን አቆጣጠር 2018</div>
-    <div class="calendar-wrapper" id="main-calendar"></div>
-    
-    <div id="countdownContainer">
-        <div id="listBody"></div>
-        <button class="btn-test" onclick="sendTestPush()">🔔 Test Notification Sound</button>
+
+    <div class="dashboard">
+        <div class="info-box"><span class="box-label">ዛሬ</span><span id="live-day" class="box-value">--</span></div>
+        <div class="info-box"><span class="box-label">ወር</span><span id="live-month" class="box-value">--</span></div>
+        <div class="info-box"><span class="box-label">ዓመት</span><span class="box-value">2018</span></div>
     </div>
 
+    <div class="calendar-wrapper" id="main-calendar"></div>
+
+    <div id="countdownContainer"><div id="listBody"></div></div>
+
     <script>
-        // 1. PERMANENT STORAGE KEY (Universal)
-        const DB_KEY = 'ETHIO_FLOW_FINAL_SAFE';
-        let countdowns = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-
-        // 2. REQUEST PERSISTENCE (Ask phone not to delete data)
-        if (navigator.storage && navigator.storage.persist) {
-            navigator.storage.persist().then(granted => {
-                if (granted) console.log("Storage will not be cleared by system.");
-            });
+        // 1. OFFLINE SETUP
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js');
         }
 
-        // 3. NOTIFICATION PERMISSION
-        function askNotify() {
-            if ("Notification" in window) {
-                Notification.requestPermission();
-            }
-        }
-
-        function sendTestPush() {
-            if (Notification.permission === "granted") {
-                new Notification("Ethio-Flow Test", { body: "Notifications are working! ✅" });
-            } else {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") new Notification("Success!", { body: "Now working!" });
-                    else alert("Please allow notifications in settings.");
-                });
-            }
-        }
-
-        // 4. CALENDAR LOGIC
         const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
         const offsets2018 = [3, 5, 0, 2, 4, 6, 1, 3, 5, 0, 2, 4, 4];
+        const DB_KEY = 'ETHIO_FLOW_PERMANENT_V1';
+        let countdowns = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-        function generate() {
+        // 2. LIVE DATE CALCULATION
+        function updateLiveDate() {
+            const now = new Date();
+            const start = new Date("2025-09-11"); // Meskerem 1, 2018
+            const diffDays = Math.floor((now - start) / (1000 * 60 * 60 * 24));
+            
+            let mIdx = Math.floor(diffDays / 30);
+            let day = (diffDays % 30) + 1;
+            if (mIdx > 12) { mIdx = 12; day = diffDays - 360 + 1; }
+
+            document.getElementById('live-day').innerText = day;
+            document.getElementById('live-month').innerText = amhMonths[mIdx];
+            return { mIdx, day };
+        }
+
+        function generateCalendar() {
             const wrapper = document.getElementById('main-calendar');
+            const today = updateLiveDate();
+            wrapper.innerHTML = "";
+
             amhMonths.forEach((name, mIdx) => {
                 const days = (mIdx === 12) ? 6 : 30;
                 let cells = "";
-                for (let e = 0; e < offsets2018[mIdx]; e++) cells += `<div class="cell" style="background:#fafafa"></div>`;
+                for (let e = 0; e < offsets2018[mIdx]; e++) cells += `<div class="cell empty"></div>`;
                 for (let i = 1; i <= days; i++) {
-                    const isToday = (name === "የካቲት" && i === 23);
+                    const isToday = (mIdx === today.mIdx && i === today.day);
                     cells += `<div class="cell" onclick="addEvent('${name}', ${i}, ${mIdx})">${isToday ? `<div class="today-mark">${i}</div>` : i}</div>`;
                 }
-                wrapper.innerHTML += `<div class="month-card" id="m-${mIdx}"><div class="month-title">${name} 2018</div><div class="grid">${cells}</div></div>`;
+                wrapper.innerHTML += `<div class="month-card" id="m-${mIdx}"><div class="month-title">${name} 2018</div><div class="days-header"><span>ሰ</span><span>ማ</span><span>ረ</span><span>ሐ</span><span>አ</span><span>ቅ</span><span>እ</span></div><div class="grid">${cells}</div></div>`;
             });
-            setTimeout(() => document.getElementById('m-5').scrollIntoView({inline:'center'}), 300);
+            setTimeout(() => { document.getElementById('m-'+today.mIdx).scrollIntoView({inline:'center'}); }, 300);
             render();
         }
 
         function addEvent(m, d, idx) {
-            const note = prompt(`${m} ${d} - የዝግጅቱ ስም?`);
+            const note = prompt(`${m} ${d} - ምን ይሁን?`);
             if(!note) return;
-            const diff = ((idx * 30) + d) - ((5 * 30) + 23);
-            countdowns.push({ 
-                id: Date.now(), 
-                note, 
-                target: new Date().setHours(24,0,0,0) + ((diff-1)*86400000),
-                notified: false 
-            });
+            const todayIdx = updateLiveDate().mIdx;
+            const todayDay = updateLiveDate().day;
+            const diff = ((idx * 30) + d) - ((todayIdx * 30) + todayDay);
+            countdowns.push({ id: Date.now(), note, target: Date.now() + (diff * 86400000), m, d });
             save();
         }
 
-        function save() {
-            localStorage.setItem(DB_KEY, JSON.stringify(countdowns));
-            render();
-        }
-
+        function save() { localStorage.setItem(DB_KEY, JSON.stringify(countdowns)); render(); }
         function render() {
             const list = document.getElementById('listBody');
             list.innerHTML = "";
             countdowns.forEach(item => {
-                list.innerHTML += `<div class="countdown-item">
-                    <div><b>${item.note}</b><br><span class="item-timer" id="t-${item.id}">--:--:--</span></div>
-                    <button onclick="del(${item.id})" style="background:none; border:none; color:red; font-size:20px;">×</button>
-                </div>`;
+                list.innerHTML += `<div class="countdown-item"><div><b>${item.note}</b> (${item.m} ${item.d})</div><span class="item-timer" id="t-${item.id}">--:--</span></div>`;
             });
         }
 
-        function del(id) { countdowns = countdowns.filter(c => c.id !== id); save(); }
-
-        // 5. THE TIMER & AUTO-NOTIFICATION
         setInterval(() => {
-            const now = Date.now();
             countdowns.forEach(item => {
                 const el = document.getElementById(`t-${item.id}`);
-                const dist = item.target - now;
-                
-                if (dist <= 0 && !item.notified) {
-                    if (Notification.permission === "granted") {
-                        new Notification("Ethio-Flow Reminder", { body: `ጊዜው ደርሷል: ${item.note}` });
-                    }
-                    item.notified = true;
-                    save();
-                }
-
-                if (el) el.innerText = dist < 0 ? "ደርሷል!" : Math.floor(dist/86400000)+"ቀን "+Math.floor((dist%86400000)/3600000)+"ሰ";
+                const dist = item.target - Date.now();
+                if (el) el.innerText = dist < 0 ? "ደርሷል!" : Math.floor(dist/86400000)+"ቀን";
             });
         }, 1000);
 
-        window.onload = () => { generate(); askNotify(); };
-        if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Offline mode active!'))
-            .catch(err => console.log('Offline setup failed', err));
-    });
-        }
-        function updateLiveDate() {
-    const amhMonths = ["መስከረም", "ጥቅምት", "ኅዳር", "ታኅሣሥ", "ጥር", "የካቲት", "መጋቢት", "ሚያዝያ", "ግንቦት", "ሰኔ", "ሐምሌ", "ነሐሴ", "ጳጉሜን"];
-    
-    // Calculate Ethio Date for 2018 (Approximate logic for the current period)
-    const now = new Date();
-    const startOfEthioYear = new Date("2025-09-11"); // Meskerem 1, 2018
-    
-    const diffInMs = now - startOfEthioYear;
-    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
-    let ethMonthIdx = Math.floor(diffInDays / 30);
-    let ethDay = (diffInDays % 30) + 1;
-    
-    // Handle Pagume
-    if (ethMonthIdx > 12) {
-        ethMonthIdx = 12;
-        ethDay = diffInDays - (12 * 30) + 1;
-    }
-
-    // Update the Dashboard
-    document.getElementById('today-day').innerText = amhMonths[ethMonthIdx] + " " + ethDay;
-    document.getElementById('today-month').innerText = amhMonths[ethMonthIdx];
-    document.getElementById('today-year').innerText = "2018";
-    
-    // Highlight the blue box in the calendar for today
-    highlightToday(ethMonthIdx, ethDay);
-}
-
-function highlightToday(mIdx, day) {
-    // This finds the cell in the calendar and makes it blue automatically
-    const monthCards = document.querySelectorAll('.month-card');
-    const todayCard = monthCards[mIdx];
-    if (todayCard) {
-        const cells = todayCard.querySelectorAll('.cell:not(.empty)');
-        cells[day - 1].classList.add('today-mark');
-    }
-}
-
-// Call this inside window.onload
-window.onload = () => {
-    generateCalendar(); 
-    updateLiveDate();
-};
+        window.onload = generateCalendar;
     </script>
 </body>
 </html>
-
-
-
