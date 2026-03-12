@@ -36,6 +36,24 @@
         #countdownContainer { max-height: 250px; overflow-y: auto; background: #121212; padding: 15px; border-top: 4px solid var(--eth-blue); }
         .countdown-item { background: #1e1e1e; color: white; margin-bottom: 10px; padding: 14px; border-radius: 14px; display: flex; justify-content: space-between; align-items: center; border-left: 4px solid var(--adwa-red); }
         .item-timer { font-family: 'Courier New', monospace; color: #00ff00; font-weight: bold; font-size: 0.85em; }
+        /* Styling for days that have a countdown */
+.event-mark { 
+    background: #FFEBEE !important; /* Very light red */
+    color: var(--adwa-red) !important;
+    border: 1px solid #FFCDD2;
+    position: relative;
+}
+
+/* Add a small dot below the number for better look */
+.event-mark::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    background: var(--adwa-red);
+    border-radius: 50%;
+                             }
     </style>
 </head>
 <body>
@@ -88,41 +106,47 @@
 
         // 3. CALENDAR GENERATION
         function generateCalendar() {
-            const wrapper = document.getElementById('main-calendar');
-            const today = getEthioDate();
-            wrapper.innerHTML = "";
+    const wrapper = document.getElementById('main-calendar');
+    const today = getEthioDate();
+    wrapper.innerHTML = "";
 
-            amhMonths.forEach((name, mIdx) => {
-                const daysInMonth = (mIdx === 12) ? 6 : 30;
-                let dayHeaderHtml = `<div class="days-header">${dayNames.map(d => `<span>${d}</span>`).join('')}</div>`;
+    amhMonths.forEach((name, mIdx) => {
+        const daysInMonth = (mIdx === 12) ? 6 : 30;
+        let dayHeaderHtml = `<div class="days-header">${dayNames.map(d => `<span>${d}</span>`).join('')}</div>`;
 
-                let cells = "";
-                // Empty slots
-                for (let e = 0; e < offsets2018[mIdx]; e++) cells += `<div class="cell empty"></div>`;
-                // Days
-                for (let i = 1; i <= daysInMonth; i++) {
-                    const isToday = (mIdx === today.mIdx && i === today.day);
-                    cells += `<div class="cell" onclick="addEvent('${name}', ${i}, ${mIdx})">
-                        ${isToday ? `<div class="today-mark">${i}</div>` : i}
-                    </div>`;
-                }
+        let cells = "";
+        for (let e = 0; e < offsets2018[mIdx]; e++) cells += `<div class="cell empty"></div>`;
 
-                wrapper.innerHTML += `
-                    <div class="month-card" id="m-${mIdx}">
-                        <div class="month-title">${name} 2018</div>
-                        ${dayHeaderHtml}
-                        <div class="grid">${cells}</div>
-                    </div>`;
-            });
+        for (let i = 1; i <= daysInMonth; i++) {
+            const isToday = (mIdx === today.mIdx && i === today.day);
+            
+            // CHECK: Does this specific day have a countdown saved?
+            const hasEvent = countdowns.some(item => item.m === name && item.d === i);
+            
+            // Add classes based on status
+            let cellClass = "cell";
+            if (isToday) cellClass += " today-mark";
+            if (hasEvent && !isToday) cellClass += " event-mark";
 
-            // Scroll to the current month automatically
-            setTimeout(() => {
-                const currentMonthEl = document.getElementById('m-' + today.mIdx);
-                if(currentMonthEl) currentMonthEl.scrollIntoView({inline:'center'});
-            }, 300);
-            render();
+            cells += `<div class="${cellClass}" onclick="addEvent('${name}', ${i}, ${mIdx})">
+                ${i}
+            </div>`;
         }
 
+        wrapper.innerHTML += `
+            <div class="month-card" id="m-${mIdx}">
+                <div class="month-title">${name} 2018</div>
+                ${dayHeaderHtml}
+                <div class="grid">${cells}</div>
+            </div>`;
+    });
+
+    setTimeout(() => {
+        const currentMonthEl = document.getElementById('m-' + today.mIdx);
+        if(currentMonthEl) currentMonthEl.scrollIntoView({inline:'center'});
+    }, 300);
+    render();
+        }
         function addEvent(m, d, idx) {
             const note = prompt(`${m} ${d} - Event?`);
             if(!note) return;
@@ -169,6 +193,12 @@
         }, 1000);
 
         window.onload = generateCalendar;
+        function requestSave() {
+    bridge.contentWindow.postMessage({ type: 'SAVE', payload: countdowns }, '*');
+    render();
+    generateCalendar(); // This ensures the red marks appear immediately
+        }
     </script>
 </body>
 </html>
+
